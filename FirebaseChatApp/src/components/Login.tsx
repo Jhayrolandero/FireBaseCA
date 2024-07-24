@@ -1,23 +1,21 @@
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, getAdditionalUserInfo } from "firebase/auth";
-import { provider } from "../config/firebase";
+import { signInWithPopup, GoogleAuthProvider, signOut, getAdditionalUserInfo } from "firebase/auth";
+import { provider, auth } from "../config/firebase";
 import { useEffect, useState } from "react";
-import { User } from "firebase/auth/cordova";
-import { collection, addDoc, getDocs } from "firebase/firestore"; 
+import { isAuth } from "../services/AuthService";
+import { collection, addDoc, getDocs, setDoc, doc } from "firebase/firestore"; 
 import { db } from "../config/firebase";
-
+import { useNavigate } from "react-router-dom";
 export default function Login() {
 
-    const auth = getAuth()
-    auth.useDeviceLanguage()
-    const [isLog, setLog] = useState(false)
-    const [user, setUser] = useState<User>()
+    const navigate = useNavigate()
     
     useEffect(() => {
         isAuth()
-        .then((x : boolean) => {
-            setLog(x)
+        .then(auth => {
+            if(auth) {
+                navigate('/home')
+            } 
         })
-        .catch(err => console.error(err))
     }, [])
 
     useEffect(() => {
@@ -29,51 +27,40 @@ export default function Login() {
         })
     }, [])
 
-    const isAuth = () : Promise<boolean> => {
-        return new Promise((resolve, reject) => {
-            auth.authStateReady()
-            .then(() => {
-                    if(auth.currentUser) {
-                        console.log(auth.currentUser)
-                        setUser(auth.currentUser)
-                        resolve(true)
-                    } else {
-                        setUser(undefined)
-                        resolve(false)
-                    }
-                }
-            )
-            .catch(err => {
-                console.error(err)
-                setUser(undefined)
-                resolve(false)
-            })
-
-        })
-    }
-
-
 
     const googleLogin = () => {
         signInWithPopup(auth, provider)
-        .then(x => {
-            const credential = GoogleAuthProvider.credentialFromResult(x);
+        .then(info => {
+
+            const newUser = getAdditionalUserInfo(info)?.isNewUser
+            // console.log(x.user.email)
+            // console.log(x.user.)
+            if(newUser) {
+                // Add a new document in collection "cities"
+                setDoc(doc(db, "users", info.user.uid), {
+                    name: info.user.displayName,
+                    id: info.user.uid,
+                    photoURL: info.user.photoURL,
+                    email: info.user.email,
+                    emailVerified: info.user.emailVerified
+                });
+            }
+            // const credential = GoogleAuthProvider.credentialFromResult(x);
             
-            const token = credential!.accessToken;
+            // const token = credential!.accessToken;
             
-            console.log(token)
-            const user = x.user;
-            console.log(auth.currentUser)
-            console.log(user)
-            console.log(getAdditionalUserInfo(x))
-            setLog(true)
+            // console.log(token)
+            // const user = x.user;
+            // console.log(auth.currentUser)
+            // console.log(user)
+            // console.log(getAdditionalUserInfo(x)?.isNewUser)
+            navigate('/home')
         })
         .catch(err => console.error(err))
     }
 
     const logOut = () => {
         signOut(auth).then(() => {
-            setLog(false)
             // Sign-out successful.
           }).catch((error) => {
             console.error(error)
@@ -92,22 +79,11 @@ export default function Login() {
             console.error("Error adding document: ", e);
           }
     }
-    return (
-        <>
-        {
-            isLog ? 
-            <div>
-                <p>Welcome! {user?.displayName}</p>
-                <h4>logged</h4>
-                <button onClick={addData}>Push Data</button>
-                <button onClick={logOut} className="border-2 p-2 border-black rounded-md">Logout</button>
-            </div> :
-            <div>
-                <button onClick={googleLogin} className="border-2 p-2 border-black rounded-md">Login with Google</button>
-                <button onClick={() => console.log(auth.currentUser)} className="border-2 p-2 border-black rounded-md">User</button>
-            </div>
-        }
-        </>
-    )
 
+    return(
+        <div className="min-h-[100dvh]  bg-[#030917] text-[#ff9100] flex flex-col justify-center items-center">
+            <h2 className="text-[4rem] font-bold text-[#ff9100]">FireChat</h2>
+            <button onClick={googleLogin} className="border-2 p-2  rounded-md  border-[#ff9100] text-[#ff9100]"><i className="text-[#ff9100] fa-brands fa-google text-[1.25rem]" ></i> Login with Google</button>
+        </div>
+    )
 }
