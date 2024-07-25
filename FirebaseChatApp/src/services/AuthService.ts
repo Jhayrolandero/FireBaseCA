@@ -5,7 +5,7 @@ export const isAuth = () : Promise<boolean> => {
         auth.authStateReady()
         .then(() => {
                 if(auth.currentUser) {
-                    console.log(auth.currentUser)
+                    // console.log(auth.currentUser)
                     resolve(true)
                 } else {
                     resolve(false)

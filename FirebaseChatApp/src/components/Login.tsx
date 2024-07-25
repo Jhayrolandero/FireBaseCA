@@ -33,8 +33,6 @@ export default function Login() {
         .then(info => {
 
             const newUser = getAdditionalUserInfo(info)?.isNewUser
-            // console.log(x.user.email)
-            // console.log(x.user.)
             if(newUser) {
                 // Add a new document in collection "cities"
                 setDoc(doc(db, "users", info.user.uid), {
@@ -45,15 +43,6 @@ export default function Login() {
                     emailVerified: info.user.emailVerified
                 });
             }
-            // const credential = GoogleAuthProvider.credentialFromResult(x);
-            
-            // const token = credential!.accessToken;
-            
-            // console.log(token)
-            // const user = x.user;
-            // console.log(auth.currentUser)
-            // console.log(user)
-            // console.log(getAdditionalUserInfo(x)?.isNewUser)
             navigate('/home')
         })
         .catch(err => console.error(err))

@@ -21,11 +21,8 @@ export default function App() {
   }, [])
 
   return (
-    <div className='min-h-[100dvh]  bg-[#030917] text-[#ff9100] grid grid-rows-[auto_1fr_auto]'>
-      <Topnav />
-      <main className="flex-1">
+    <div >
         <Outlet />
-      </main>
     </div>
   )
 }
