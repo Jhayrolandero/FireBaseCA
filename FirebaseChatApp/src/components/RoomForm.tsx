@@ -11,14 +11,8 @@ import {
 import { useForm, Controller, SubmitHandler } from "react-hook-form"
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { RoomInput } from "../interface/RoomInput";
 
-
-interface RoomInput {
-    roomName: string
-    topics: string[]
-    capacity: number
-    public: boolean
-}
 
 export function RoomForm() {
   const [open, setOpen] = React.useState(false);
