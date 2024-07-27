@@ -10,21 +10,23 @@ import ErrorPage from './components/ErrorPage.tsx';
 import Login from './components/Login.tsx';
 import Home from './components/Home.tsx';
 import { ThemeProvider } from "@material-tailwind/react";
-import Room from './components/Room.tsx';
-import Lobby from './components/Lobby.tsx';
-import { loader } from './loader.ts';
-
-
+import Room, { loader as roomLoader } from './components/Room.tsx';
+import { loader as userLoader } from './loader.ts';
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App/>,
     errorElement: <ErrorPage/>,
-    loader: loader,
+    loader: userLoader,
     children: [
       {
           path: "/home",
           element: <Home/>,
+      },
+      {
+        path: "/room/:id",
+        element: <Room />,
+        loader: roomLoader
       }
     ]
   },
@@ -32,10 +34,6 @@ const router = createBrowserRouter([
     path: '/login',
     element: <Login/>,
     errorElement: <ErrorPage/>,
-  },
-  {
-    path: "/room/:id",
-    element: <Room />
   },
 ]);
 

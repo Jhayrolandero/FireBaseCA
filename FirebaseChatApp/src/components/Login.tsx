@@ -18,14 +18,14 @@ export default function Login() {
         })
     }, [])
 
-    useEffect(() => {
-        getDocs(collection(db, "users"))
-        .then(res => {
-            res.forEach((doc) => {
-            console.log(`${doc.id} => ${doc.data()}`);
-            });
-        })
-    }, [])
+    // useEffect(() => {
+    //     getDocs(collection(db, "users"))
+    //     .then(res => {
+    //         res.forEach((doc) => {
+    //         console.log(`${doc.id} => ${doc.data()}`);
+    //         });
+    //     })
+    // }, [])
 
 
     const googleLogin = () => {
