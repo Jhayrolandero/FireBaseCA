@@ -10,7 +10,7 @@ export default function RoomDisplay() {
         
     useEffect(() => {
 
-      const q = query(roomsRef, limit(3));
+      const q = query(roomsRef, limit(1));
       const unsub = onSnapshot(q, {includeMetadataChanges: true}, (snapshot) => {
         const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
         // console.log(source)

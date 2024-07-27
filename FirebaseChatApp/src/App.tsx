@@ -78,9 +78,9 @@ export default function App() {
         {/* <RoomForm /> */}
         <button onClick={logOut}>Sign Out</button>
       </aside>
-      <div className="grid grid-rows-[auto_1fr_auto]">
+      <div className="grid grid-rows-[auto_1fr] max-h-screen">
         <Topnav /> 
-      <main>
+      <main className="h-full overflow-auto">
         <Outlet />
       </main>
       </div>
