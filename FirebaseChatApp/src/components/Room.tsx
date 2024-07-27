@@ -117,7 +117,7 @@ export default function Room() {
               render={({ field }) => 
                   // <Input label="Room Name" size="lg" crossOrigin={undefined} {...field}/>                    
               // <Input label="Topics" size="lg" crossOrigin={undefined} {...field}/>
-              <Input label="Room Name" size="lg" crossOrigin={undefined} className=" absolute" {...field}/>
+              <Input label="Room Name" size="lg" crossOrigin={undefined} className="absolute border-[1px] border-[#ff9100] rounded-full text-[#ff9100]" {...field}/>
               }
             />
 

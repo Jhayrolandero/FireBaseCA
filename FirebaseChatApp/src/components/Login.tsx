@@ -5,6 +5,7 @@ import { isAuth } from "../services/AuthService";
 import { collection, addDoc, getDocs, setDoc, doc } from "firebase/firestore"; 
 import { db } from "../config/firebase";
 import { useNavigate } from "react-router-dom";
+
 export default function Login() {
 
     const navigate = useNavigate()
@@ -17,16 +18,6 @@ export default function Login() {
             } 
         })
     }, [])
-
-    // useEffect(() => {
-    //     getDocs(collection(db, "users"))
-    //     .then(res => {
-    //         res.forEach((doc) => {
-    //         console.log(`${doc.id} => ${doc.data()}`);
-    //         });
-    //     })
-    // }, [])
-
 
     const googleLogin = () => {
         signInWithPopup(auth, provider)
@@ -46,27 +37,6 @@ export default function Login() {
             navigate('/home')
         })
         .catch(err => console.error(err))
-    }
-
-    const logOut = () => {
-        signOut(auth).then(() => {
-            // Sign-out successful.
-          }).catch((error) => {
-            console.error(error)
-        });
-    }
-    
-    const addData = async () => {
-        try {
-            const docRef = await addDoc(collection(db, "users"), {
-              first: "Ada",
-              last: "Lovelace",
-              born: 1815
-            });
-            console.log("Document written with ID: ", docRef.id);
-          } catch (e) {
-            console.error("Error adding document: ", e);
-          }
     }
 
     return(

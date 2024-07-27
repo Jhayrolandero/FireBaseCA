@@ -5,6 +5,7 @@ import { auth } from "./config/firebase";
 import { UserProfile } from "./interface/UserProfile";
 import { signOut, User } from "firebase/auth";
 import Topnav from "./components/Topnav";
+import { Sidebar } from "./components/Sidebar";
 
 
 export const loader = async () => {
@@ -66,21 +67,14 @@ export default function App() {
   }
   
   return (
-    <div className='min-h-[100dvh]  bg-[#030917] text-[#ff9100] grid grid-cols-[auto_1fr]'>
+    <div className='min-h-[100dvh]  bg-[#030917] text-[#ff9100] grid grid-cols-[1fr]'>
     {
       loading ? <h4>Authenticating...</h4> :
       userProfileData === undefined ? <h4>Unknown user profile</h4> : 
       <>
-      <aside className="border-r-[1px] border-[#ff9100] rounded-lg  min-w-[160px] flex flex-col p-4 items-center">
-        <p>{userProfileData.name}</p>
-        <img src={userProfileData.photoURL ? userProfileData.photoURL : ''} alt="profile" className="rounded-full w-[80%] aspect-square"/>
-        <hr className="text-[#ff9100]"/>
-        {/* <RoomForm /> */}
-        <button onClick={logOut}>Sign Out</button>
-      </aside>
       <div className="grid grid-rows-[auto_1fr] max-h-screen">
         <Topnav /> 
-      <main className="h-full overflow-auto">
+      <main className="overflow-auto relative">
         <Outlet />
       </main>
       </div>

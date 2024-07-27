@@ -4,6 +4,7 @@ import { signOut } from "firebase/auth"
 import { auth } from "../config/firebase"
 import { Link, useNavigate } from "react-router-dom"
 import { User } from "./Home"
+import { Sidebar } from "./Sidebar"
 export default function Topnav() {
 
     const navigate = useNavigate()
@@ -30,9 +31,12 @@ export default function Topnav() {
 
     
   return (
-    <header className="flex justify-between items-center  border-b-[1px] border-[#ff9100] min-h-[48px]">
+    <header className="grid  grid-cols-[1fr_1fr_1fr] items-center border-b-[1px] border-[#ff9100] min-h-[48px]">
+        
+        <Sidebar />
+
         <Link to={'/home'}>
-            <h4 className="text-[1.25rem] font-bold">FireChat</h4>
+            <h4 className="text-[1.25rem] font-bold text-center">FireChat</h4>
         </Link>
         {/* { isAuth === null ? (<button>Loading...</button>) 
         : isAuth ? (<button onClick={logOut}>Logout</button>) 
