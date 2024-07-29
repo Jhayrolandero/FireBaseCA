@@ -67,7 +67,8 @@ export default function App() {
   }
   
   return (
-    <div className='min-h-[100dvh]  bg-[#030917] text-[#ff9100] grid grid-cols-[1fr]'>
+    <div className='min-h-[100dvh] bg-black  bg-dot-white/[0.2] text-[#ff9100] grid grid-cols-[1fr]'>
+
     {
       loading ? <h4>Authenticating...</h4> :
       userProfileData === undefined ? <h4>Unknown user profile</h4> : 
@@ -75,6 +76,7 @@ export default function App() {
       <div className="grid grid-rows-[auto_1fr] max-h-screen">
         <Topnav /> 
       <main className="overflow-auto relative">
+      <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-black  [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
         <Outlet />
       </main>
       </div>

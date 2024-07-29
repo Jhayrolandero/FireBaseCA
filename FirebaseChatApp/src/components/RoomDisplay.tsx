@@ -1,4 +1,4 @@
-import { collection, getDocs, limit, onSnapshot, query } from 'firebase/firestore';
+import { collection, DocumentData, getDocs, limit, onSnapshot, Query, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import { db } from '../config/firebase';
 import { RoomDis } from '../interface/RoomDisplay';
@@ -10,11 +10,13 @@ export default function RoomDisplay() {
         
     useEffect(() => {
 
-      const q = query(roomsRef, limit(1));
-      const unsub = onSnapshot(q, {includeMetadataChanges: true}, (snapshot) => {
-        const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
-        // console.log(source)
-        const data = snapshot.docs.map(doc => ({
+      const q = query(roomsRef, limit(5));
+
+
+      const fetchDocs = async (query: Query<DocumentData, DocumentData>) => {
+        const querySnapshot = await getDocs(query);
+
+        const data = querySnapshot.docs.map(doc => ({
           roomName: doc.data().roomName,
           topics: doc.data().topics,
           capacity: doc.data().capacity,
@@ -23,10 +25,9 @@ export default function RoomDisplay() {
         }))
 
         setRoom([...data])
-    });
+      }
 
-    return () => unsub();
-
+      fetchDocs(q)
     }, [])
     
   return (
@@ -40,7 +41,7 @@ export default function RoomDisplay() {
               <small>
                   3/{x.capacity}
                   <span className=" inline-block">
-                  <div className="w-[12px] aspect-square rounded-full bg-red-600 ml-[4px] " title="private"></div>
+                  <div className={"w-[12px] aspect-square rounded-full ml-[4px]" + (x.public ? " bg-green-600" :"bg-red-600") } title={x.public ? 'Public' : 'Private'}></div>
                   </span>
               </small>
               </div>
