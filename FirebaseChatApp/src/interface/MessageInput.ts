@@ -4,4 +4,5 @@ export interface MessageInput {
     photoURL: string | null
     messageContent: string
     timestamp: Date
+    type: string
 }

@@ -26,6 +26,8 @@ export default function Home() {
   return(
 
     <div className="h-full flex flex-col gap-4 justify-center items-center">
+            <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-black  [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+
       <form className="min-w-[400px]">
         <PlaceholdersAndVanishInput
           placeholders={placeholders}

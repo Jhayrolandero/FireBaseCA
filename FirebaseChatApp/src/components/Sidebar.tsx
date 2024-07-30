@@ -50,7 +50,7 @@ export function Sidebar() {
  
   const logOut = () => {
     signOut(auth).then(() => {
-      navigate('/login')
+      return navigate('/login')
         // Sign-out successful.
       }).catch((error) => {
         console.error(error)

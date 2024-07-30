@@ -4,4 +4,5 @@ export interface RoomDis {
     capacity: number
     public: boolean
     roomID: string
+    currCount: number
 }

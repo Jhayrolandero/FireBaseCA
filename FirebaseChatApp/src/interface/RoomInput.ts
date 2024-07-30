@@ -3,4 +3,5 @@ export interface RoomInput {
     topics: string[]
     capacity: number
     public: boolean
+    currCount: number
 }

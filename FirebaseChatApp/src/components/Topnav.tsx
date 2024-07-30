@@ -31,7 +31,7 @@ export default function Topnav() {
 
     
   return (
-    <header className="grid  grid-cols-[1fr_1fr_1fr] items-center border-b-[1px] border-[#ff9100] min-h-[48px]">
+    <header className="grid bg-black py-2  grid-cols-[1fr_1fr_1fr] items-center  border-[#ff9100] min-h-[48px]">
         
         <Sidebar />
 

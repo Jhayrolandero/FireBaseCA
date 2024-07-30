@@ -42,11 +42,11 @@ export default function Login() {
     }
 
     return(
-        <div className="min-h-[100dvh] bg-black bg-dot-white/[0.2] text-[#ff9100] flex flex-col justify-center items-center">
+        <div className="min-h-[100dvh] bg-black bg-dot-white/[0.2] text-[#c1c1c1] flex flex-col justify-center items-center">
             {/* <h2 className="text-[4rem] font-bold text-[#ff9100]">FireChat</h2> */}
             <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-black  [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
             <FlipWordsComponent />
-            <button onClick={googleLogin} className="border-2 p-2  rounded-md  border-[#ff9100] text-[#ff9100]"><i className="text-[#ff9100] fa-brands fa-google text-[1.25rem]" ></i> Login with Google</button>
+        <button onClick={googleLogin} className="border-2 p-2  rounded-md  border-[##c1c1c1] "><i className=" fa-brands fa-google text-[1.25rem]" ></i> Login with Google</button>
         </div>
     )
 }
