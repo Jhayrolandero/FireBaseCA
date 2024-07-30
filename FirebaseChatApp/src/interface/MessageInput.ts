@@ -5,4 +5,5 @@ export interface MessageInput {
     messageContent: string
     timestamp: Date
     type: string
+    replySnippet: string
 }

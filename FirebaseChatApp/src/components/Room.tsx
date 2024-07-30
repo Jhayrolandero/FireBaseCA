@@ -1,14 +1,16 @@
-import { Button, IconButton, Input } from "@material-tailwind/react"
+import { IconButton, Input } from "@material-tailwind/react"
+import { User } from "firebase/auth"
+import { addDoc, collection, doc, DocumentSnapshot, getDoc, getDocs, increment, limit, onSnapshot, orderBy, query, QuerySnapshot, setDoc, updateDoc } from "firebase/firestore"
+import { useEffect, useRef, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { useLoaderData, useNavigate } from "react-router-dom"
-import { RoomInput } from "../interface/RoomInput"
-import { MessageInput } from "../interface/MessageInput"
-import { addDoc, collection, doc, DocumentReference, DocumentSnapshot, getDoc, getDocs, increment, limit, onSnapshot, orderBy, query, QuerySnapshot, setDoc, updateDoc } from "firebase/firestore"
+import { Meteors } from "../../@/components/ui/meteors"
 import { db } from "../config/firebase"
+import { MessageInput } from "../interface/MessageInput"
 import { getUser } from "../services/UserService"
-import { User } from "firebase/auth"
-import { useEffect, useState } from "react"
-import { AcerSidebar } from "./AcerSidebar"
+import RoomMessage from "./Room/RoomMessage"
+import RoomNotif from "./Room/RoomNotif"
+import RoomSidebar from "./Room/RoomSidebar"
 
 
 interface RoomLoader {
@@ -23,7 +25,14 @@ interface userData {
   uid: string
   joinDate: Date
   role: string
+  photoURL: string
 }
+
+type reply = {
+  replySnippet: string
+  isReply: boolean
+}
+
 
 export async function loader({ params } : {params: any}) {
   const userData = await getUser()
@@ -42,6 +51,10 @@ export default function Room() {
   const roomRef = collection(db, "rooms", roomData.roomID, "messages");
   const userRoomRef = collection(db, "rooms", roomData.roomID, "users");
   const [messages, setMessages] = useState<MessageInput[]>([])
+  const [users, setUsers] = useState<userData[]>([])
+  const [isReply, setReply] = useState(false)
+  const [replySnip, setReplySnippet] = useState("")
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -63,7 +76,8 @@ export default function Room() {
             role: "member",
             uid: uid,
             joinDate: new Date(),
-            displayName: displayName 
+            displayName: displayName,
+            photoURL: roomData.userData!.photoURL ? roomData.userData!.photoURL : ''
           }
           setDoc(doc(userRoomRef, uid), userData)
           .then(() => {
@@ -74,7 +88,8 @@ export default function Room() {
               photoURL: null,
               messageContent: "joined the room",
               timestamp: new Date(),
-              uid: uid
+              uid: uid,
+              replySnippet: ""
             }
             setDoc(doc(roomRef), messageData)
             .then(() => {
@@ -90,6 +105,23 @@ export default function Room() {
       })
     }
 
+    const getRoomUsers = async () => {
+      const roomUsersData = await getDocs(collection(db, "rooms", roomData.roomID, "users"))
+      roomUsersData.forEach(doc => {
+        const data: userData = {
+          displayName: doc.data().displayName,
+          uid: doc.data().uid,
+          joinDate: doc.data().joinDate,
+          role: doc.data().role,
+          photoURL: doc.data().photoURL
+        }
+        setUsers(prev => [...prev, data])
+        // console.log(doc.data())
+      })
+    }
+
+    getRoomUsers()
+
     const getMessages = async () => {
       const q = query(roomRef, orderBy('timestamp', "desc"), limit(5))
       const unsub = onSnapshot(q, {includeMetadataChanges: true}, (snapshot) => {
@@ -102,7 +134,9 @@ export default function Room() {
           photoURL: doc.data().photoURL as string | null,
           messageContent: doc.data().messageContent as string,
           timestamp: doc.data().timestamp,
-          uid: doc.data().uid as string
+          uid: doc.data().uid as string,
+          reply: doc.data().reply,
+          replySnippet: doc.data().replySnippet
         }))
         setMessages([...data])
     });
@@ -110,7 +144,9 @@ export default function Room() {
     }
 
     getMessages()
-  }, [])
+
+    focusInput()
+    }, [])
 
   const {
     control,
@@ -125,13 +161,29 @@ export default function Room() {
       photoURL: roomData.userData?.photoURL,
       messageContent: "",
       timestamp: new Date(),
-      uid: roomData.userData?.uid
+      uid: roomData.userData?.uid,
+      replySnippet: ""
     },
   })
 
+  const sendReply = (data: reply) => {
+    setReply(data.isReply)
+    setReplySnippet(data.replySnippet)
+    console.log(isReply)
+  }
+
+  const focusInput = () => {
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }
+  
   
   const onSubmit: SubmitHandler<MessageInput> = async (data) => {
     try {
+        data.type = isReply ? "reply" : data.type
+        data.replySnippet = replySnip
         const docRef = await addDoc(roomRef, data);
         console.log("Document written with ID: ", docRef.id);
         console.log(data)
@@ -141,50 +193,74 @@ export default function Room() {
   }
 
   return (
-    <div className="grid grid-cols-[1fr_auto] h-full rounded-lg">
-      <div className="grid grid-rows-[1fr_auto] h-full rounded-lg">
+    <div className="grid max-h-svh grid-cols-[1fr_auto] rounded-lg w-full">
+      <div className="grid grid-rows-[1fr_auto] ">
         <div className="flex flex-col-reverse gap-2 px-4 py-2 overflow-y-auto h-full border-b-[1px] border-r-[1px] border-t-[1px] border-[#24242c] rounded-xl">
           { messages.map(message =>
           message.type === "status" ?
-          <div className="flex justify-center items-center">
-            <p title={message.timestamp.toString()}>{message.displayName} {message.messageContent}</p>
+          <RoomNotif 
+          timestamp={message.timestamp.toString()} 
+          displayName={message.displayName} 
+          messageContent={message.messageContent} 
+          />
+          :
+          message.type === "reply" ?
+          <div>
+              <p>{message.replySnippet}</p>
+              <p>{message.messageContent}</p>
           </div>
-            :
-            <div id="messageBox" className={roomData.userData?.uid === message.uid ? 'flex-row-reverse flex gap-2 aspect-auto' : 'flex gap-2 aspect-auto'}>
-              <img className="w-[32px] h-[32px] rounded-full" src={message.photoURL ? message.photoURL : ''} alt={message.displayName} title={message.displayName}/>
-              {/* {message.timestamp.toLocaleString()} */}
-              <div className=" bg-[#18181b] px-[0.625em] border-[1px] border-[#24242c] pt-[0.125em] pb-[.0625em] rounded-2xl max-w-[60%]" title={message.timestamp.toLocaleString()}><p>{message.messageContent}</p></div>
-            </div>
+          :
+          <RoomMessage 
+          photoURL={message.photoURL ? message.photoURL : ''}
+          displayName={message.displayName}
+          timestamp={message.timestamp.toLocaleString()}
+          messageContent={message.messageContent}
+          messageUID={message.uid}
+          onReply={sendReply}
+          userUID={roomData.userData!.uid}
+          />
           )}
+          <Meteors number={20} />
         </div>
-        <div className="h-[80px]  py-2 flex items-center flex-1 w-full">
-          <form action="" className="px-10 flex-1 flex gap-4" onSubmit={handleSubmit(onSubmit)}>
-            <div className="relative flex items-center flex-1">
-            <Controller
-                rules={{required: true}}
-                name="messageContent"
-                control={control}
-                render={({ field }) =>
-                    // <Input label="Room Name" size="lg" crossOrigin={undefined} {...field}/>
-                // <Input label="Topics" size="lg" crossOrigin={undefined} {...field}/>
-                <Input label="Room Name" size="lg" crossOrigin={undefined} className="absolute border-[1px] border-[#ff9100] rounded-full text-[#ff9100]" {...field}/>
-                }
-              />
-              <IconButton type="submit" className=" bg-transparent absolute right-0 top-[2px] inline">
-                <i className="fa-solid fa-paper-plane-top text-[#ff9100]"></i>
-              </IconButton>
-            </div>
-              <IconButton className=" text-[#ff9100] bg-transparent">
-              <i className="fa-solid fa-thumbs-up"></i>
-              </IconButton>
-          </form>
+        <div className="h-[80px]  py-2 flex flex-col  flex-1 w-full">
+          <div>
+            <p className="text-[1rem]">Replying to ....</p>
+            <p className="text-[0.8rem]">Hello World</p>
+            <i className="fa-solid fa-x" onClick={() => sendReply({isReply: false, replySnippet: ""})}></i>
+          </div>
+          <div className="w-full">
+            <form action="" className="px-10 flex-1 flex gap-4" onSubmit={handleSubmit(onSubmit)}>
+              <div className="relative flex items-center flex-1">
+              <Controller
+                  rules={{required: true}}
+                  name="messageContent"
+                  control={control}
+                  render={({ field }) =>
+                  <Input
+                  inputRef={(e) => {
+                    field.ref(e);
+                    inputRef.current = e;
+                  }}
+                  label="Room Name" 
+                  size="lg" 
+                  crossOrigin={undefined} 
+                  className="absolute border-[1px] border-[#ff9100] rounded-full text-[#ff9100]" {...field}/>
+                  }
+                />
+                <IconButton type="submit" className=" bg-transparent absolute right-0 top-[2px] inline">
+                  <i className="fa-solid fa-paper-plane-top text-[#ff9100]"></i>
+                </IconButton>
+              </div>
+                <IconButton className=" text-[#ff9100] bg-transparent">
+                <i className="fa-solid fa-thumbs-up"></i>
+                </IconButton>
+            </form>
+          </div>
         </div>
       </div>
-      <div className="w-[160px] bg-black">
-        <h4>{roomData.roomData.data()!.roomName}</h4>
-        <div>
-        </div>
-      </div>
+      <RoomSidebar 
+        users={users}
+      />
     </div>
     // <div>{id}</div>
   )

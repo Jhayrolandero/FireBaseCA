@@ -58,18 +58,16 @@ export default function App() {
   }, [])
   
   return (
-    <div className='min-h-[100dvh] bg-black  bg-dot-white/[0.2] text-[#c1c1c1] grid grid-cols-[1fr]'>
+    <div className='max-h-screen h-screen bg-black  bg-dot-white/[0.2] text-[#c1c1c1] grid grid-rows-[auto_1fr]'>
 
     {
       loading ? <h4>Authenticating...</h4> :
       userProfileData === undefined ? <h4>Unknown user profile</h4> : 
       <>
-      <div className="grid grid-rows-[auto_1fr] max-h-screen">
-        <Topnav /> 
-      <main className="overflow-auto relative">
+      <Topnav /> 
+      <main className="overflow-auto">
         <Outlet />
       </main>
-      </div>
       </>
     }
     </div>
