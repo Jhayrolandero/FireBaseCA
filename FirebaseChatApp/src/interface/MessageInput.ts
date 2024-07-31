@@ -3,7 +3,8 @@ export interface MessageInput {
     displayName: string
     photoURL: string | null
     messageContent: string
-    timestamp: Date
+    timestamp: any
     type: string
     replySnippet: string
+    replyTo: string
 }

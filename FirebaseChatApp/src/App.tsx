@@ -58,7 +58,7 @@ export default function App() {
   }, [])
   
   return (
-    <div className='max-h-screen h-screen bg-black  bg-dot-white/[0.2] text-[#c1c1c1] grid grid-rows-[auto_1fr]'>
+    <div className='max-h-screen h-screen bg-black  bg-dot-white/[0.2] text-white grid grid-rows-[auto_1fr]'>
 
     {
       loading ? <h4>Authenticating...</h4> :

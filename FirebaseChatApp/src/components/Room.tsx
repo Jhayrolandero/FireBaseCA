@@ -1,6 +1,6 @@
 import { IconButton, Input } from "@material-tailwind/react"
 import { User } from "firebase/auth"
-import { addDoc, collection, doc, DocumentSnapshot, getDoc, getDocs, increment, limit, onSnapshot, orderBy, query, QuerySnapshot, setDoc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, doc, DocumentSnapshot, getDoc, getDocs, increment, limit, onSnapshot, orderBy, query, QuerySnapshot, serverTimestamp, setDoc, updateDoc } from "firebase/firestore"
 import { useEffect, useRef, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { useLoaderData, useNavigate } from "react-router-dom"
@@ -11,6 +11,7 @@ import { getUser } from "../services/UserService"
 import RoomMessage from "./Room/RoomMessage"
 import RoomNotif from "./Room/RoomNotif"
 import RoomSidebar from "./Room/RoomSidebar"
+import RoomReply from "./Room/RoomReply"
 
 
 interface RoomLoader {
@@ -31,6 +32,7 @@ interface userData {
 type reply = {
   replySnippet: string
   isReply: boolean
+  displayName: string
 }
 
 
@@ -54,6 +56,7 @@ export default function Room() {
   const [users, setUsers] = useState<userData[]>([])
   const [isReply, setReply] = useState(false)
   const [replySnip, setReplySnippet] = useState("")
+  const [replyTo, setReplyTo] = useState("")
   const inputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate()
 
@@ -89,7 +92,8 @@ export default function Room() {
               messageContent: "joined the room",
               timestamp: new Date(),
               uid: uid,
-              replySnippet: ""
+              replySnippet: "",
+              replyTo: ""
             }
             setDoc(doc(roomRef), messageData)
             .then(() => {
@@ -123,7 +127,7 @@ export default function Room() {
     getRoomUsers()
 
     const getMessages = async () => {
-      const q = query(roomRef, orderBy('timestamp', "desc"), limit(5))
+      const q = query(roomRef, orderBy('timestamp', "desc"), limit(10))
       const unsub = onSnapshot(q, {includeMetadataChanges: true}, (snapshot) => {
         const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
         console.log(snapshot.metadata)
@@ -136,7 +140,8 @@ export default function Room() {
           timestamp: doc.data().timestamp,
           uid: doc.data().uid as string,
           reply: doc.data().reply,
-          replySnippet: doc.data().replySnippet
+          replySnippet: doc.data().replySnippet,
+          replyTo: doc.data().replyTo
         }))
         setMessages([...data])
     });
@@ -145,6 +150,7 @@ export default function Room() {
 
     getMessages()
 
+    console.log(serverTimestamp())
     focusInput()
     }, [])
 
@@ -160,15 +166,15 @@ export default function Room() {
       displayName: roomData.userData?.displayName!,
       photoURL: roomData.userData?.photoURL,
       messageContent: "",
-      timestamp: new Date(),
-      uid: roomData.userData?.uid,
-      replySnippet: ""
+      timestamp: serverTimestamp(),
+      uid: roomData.userData?.uid
     },
   })
 
   const sendReply = (data: reply) => {
     setReply(data.isReply)
     setReplySnippet(data.replySnippet)
+    setReplyTo(data.displayName)
     console.log(isReply)
   }
 
@@ -184,6 +190,7 @@ export default function Room() {
     try {
         data.type = isReply ? "reply" : data.type
         data.replySnippet = replySnip
+        data.replyTo = replyTo
         const docRef = await addDoc(roomRef, data);
         console.log("Document written with ID: ", docRef.id);
         console.log(data)
@@ -195,7 +202,7 @@ export default function Room() {
   return (
     <div className="grid max-h-svh grid-cols-[1fr_auto] rounded-lg w-full">
       <div className="grid grid-rows-[1fr_auto] ">
-        <div className="flex flex-col-reverse gap-2 px-4 py-2 overflow-y-auto h-full border-b-[1px] border-r-[1px] border-t-[1px] border-[#24242c] rounded-xl">
+        <div className="flex flex-col-reverse gap-4 px-4 py-2 overflow-y-auto h-full border-b-[1px] border-r-[1px] border-t-[1px] border-[#24242c] rounded-xl">
           { messages.map(message =>
           message.type === "status" ?
           <RoomNotif 
@@ -205,15 +212,21 @@ export default function Room() {
           />
           :
           message.type === "reply" ?
-          <div>
-              <p>{message.replySnippet}</p>
-              <p>{message.messageContent}</p>
-          </div>
+          <RoomReply 
+          photoURL={message.photoURL!}
+          displayName={message.displayName}
+          timestamp={message.timestamp}
+          messageContent={message.messageContent}
+          messageUID={message.uid}
+          userUID={roomData.userData!.uid}
+          replySnippet={message.replySnippet}
+          replyTo={message.replyTo}
+          />
           :
           <RoomMessage 
           photoURL={message.photoURL ? message.photoURL : ''}
           displayName={message.displayName}
-          timestamp={message.timestamp.toLocaleString()}
+          timestamp={message.timestamp}
           messageContent={message.messageContent}
           messageUID={message.uid}
           onReply={sendReply}
@@ -223,10 +236,10 @@ export default function Room() {
           <Meteors number={20} />
         </div>
         <div className="h-[80px]  py-2 flex flex-col  flex-1 w-full">
-          <div>
-            <p className="text-[1rem]">Replying to ....</p>
-            <p className="text-[0.8rem]">Hello World</p>
-            <i className="fa-solid fa-x" onClick={() => sendReply({isReply: false, replySnippet: ""})}></i>
+          <div className={isReply ? "block" : "hidden"}>
+            <p className="text-[1rem]">Replying to {replyTo}</p>
+            <p className="text-[0.8rem]">{replySnip}</p>
+            <i className="fa-solid fa-x" onClick={() => sendReply({isReply: false, replySnippet: "", displayName: ""})}></i>
           </div>
           <div className="w-full">
             <form action="" className="px-10 flex-1 flex gap-4" onSubmit={handleSubmit(onSubmit)}>
