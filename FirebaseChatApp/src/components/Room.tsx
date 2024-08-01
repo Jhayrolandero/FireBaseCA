@@ -132,17 +132,24 @@ export default function Room() {
         const source = snapshot.metadata.hasPendingWrites ? "Local" : "Server";
         console.log(snapshot.metadata)
         console.log(source)
-        const data = snapshot.docs.map(doc => ({
-          type: doc.data().type,
-          displayName: doc.data().displayName as string,
-          photoURL: doc.data().photoURL as string | null,
-          messageContent: doc.data().messageContent as string,
-          timestamp: doc.data().timestamp,
-          uid: doc.data().uid as string,
-          reply: doc.data().reply,
-          replySnippet: doc.data().replySnippet,
-          replyTo: doc.data().replyTo
-        }))
+        const data = snapshot.docs.map(doc => {
+
+          const seconds = doc.data().timestamp.seconds
+          const nanoseconds = doc.data().timestamp.nanoseconds
+
+          const milliseconds = (seconds * 1000) + (nanoseconds / 1000000)
+          return ({
+            type: doc.data().type,
+            displayName: doc.data().displayName as string,
+            photoURL: doc.data().photoURL as string | null,
+            messageContent: doc.data().messageContent as string,
+            timestamp: new Date(milliseconds).toLocaleTimeString(),
+            uid: doc.data().uid as string,
+            reply: doc.data().reply,
+            replySnippet: doc.data().replySnippet,
+            replyTo: doc.data().replyTo
+          })
+        })
         setMessages([...data])
     });
     return () => unsub();

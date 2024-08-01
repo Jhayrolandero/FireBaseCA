@@ -9,7 +9,7 @@ interface RoomNotifProps {
 const RoomNotif: React.FC<RoomNotifProps> = ({timestamp, displayName, messageContent}) => {
   return (
     <div className="flex justify-center items-center">
-        <small title={timestamp.toString()}>{displayName} {messageContent}</small>
+        <small title={timestamp}>{displayName} {messageContent}</small>
     </div>
 )
 }
